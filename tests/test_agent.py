@@ -31,6 +31,28 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(report.job_skill_count, 0)
         self.assertTrue(any("No skills" in item for item in report.recommendations))
 
+    def test_required_and_preferred_skills_in_one_clause_keep_separate_weights(self):
+        resume = "Python, SQL, AWS, and Docker experience."
+        job = "Required: Python, SQL; Preferred: AWS, Docker."
+        report = analyze(resume, job)
+        priorities = {row.skill: row.priority for row in report.skills}
+        weights = {row.skill: row.weight for row in report.skills}
+        self.assertEqual(priorities["python"], "Required (inferred)")
+        self.assertEqual(priorities["sql"], "Required (inferred)")
+        self.assertEqual(priorities["aws"], "Preferred (inferred)")
+        self.assertEqual(priorities["docker"], "Preferred (inferred)")
+        self.assertEqual(weights, {"aws": 1, "docker": 1, "python": 2, "sql": 2})
+
+    def test_wrapped_multiword_skill_keeps_resume_evidence(self):
+        report = analyze(
+            "Built dashboards using natural language\\nprocessing for support tickets.",
+            "Preferred: natural language processing.",
+        )
+        row = next(item for item in report.skills if item.skill == "natural language processing")
+        self.assertTrue(row.present)
+        self.assertTrue(row.resume_evidence)
+        self.assertIn("natural language processing", row.resume_evidence[0].lower())
+
     def test_requires_both_inputs(self):
         with self.assertRaises(ValueError):
             analyze("", "Need Python")

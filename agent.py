@@ -148,17 +148,58 @@ def split_sentences(text: str) -> list[str]:
 
 def _contexts_for_skill(text: str, skill: str) -> list[str]:
     aliases = SKILL_ALIASES.get(skill, (skill,))
-    return [sentence for sentence in split_sentences(text)
-            if any(_contains_phrase(normalize(sentence), alias) for alias in aliases)][:5]
+    contexts = [
+        sentence for sentence in split_sentences(text)
+        if any(_contains_phrase(normalize(sentence), alias) for alias in aliases)
+    ][:5]
+    if contexts:
+        return contexts
+
+    # PDF extraction can wrap a multi-word skill across adjacent lines. Recover
+    # a two-line source window so a detected skill still has inspectable evidence.
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    for index in range(len(lines) - 1):
+        window = f"{lines[index]} {lines[index + 1]}"
+        if any(_contains_phrase(normalize(window), alias) for alias in aliases):
+            contexts.append(window)
+            if len(contexts) == 5:
+                break
+    return contexts
 
 
-def _job_priority(contexts: list[str]) -> tuple[str, int]:
-    joined = " ".join(contexts)
-    if REQUIRED_RE.search(joined):
-        return "Required (inferred)", 2
-    if PREFERRED_RE.search(joined):
-        return "Preferred (inferred)", 1
-    return "Unclassified", 1
+def _job_priority(contexts: list[str], skill: str) -> tuple[str, int]:
+    """Infer priority from the nearest requirement phrase to this skill mention.
+
+    Evaluating the whole sentence makes a phrase like "Required: Python; Preferred:
+    AWS" incorrectly mark both skills as required. Clause boundaries and nearest
+    marker distance keep mixed-priority lists skill-specific.
+    """
+    aliases = SKILL_ALIASES.get(skill, (skill,))
+    candidates: list[tuple[int, str]] = []
+    for context in contexts:
+        normalized = normalize(context)
+        for alias in aliases:
+            pattern = re.compile(r"(?<![a-z0-9])" + re.escape(alias) + r"(?![a-z0-9])", re.I)
+            for mention in pattern.finditer(normalized):
+                separators = [m.start() for m in re.finditer(r"[;\\n•]", normalized)]
+                left = max((position + 1 for position in separators if position < mention.start()), default=0)
+                right = min((position for position in separators if position >= mention.end()), default=len(normalized))
+                clause = normalized[left:right]
+                mention_start = mention.start() - left
+                mention_end = mention.end() - left
+                for label, expression in (("Required (inferred)", REQUIRED_RE), ("Preferred (inferred)", PREFERRED_RE)):
+                    for marker in expression.finditer(clause):
+                        if marker.end() <= mention_start:
+                            distance = mention_start - marker.end()
+                        elif marker.start() >= mention_end:
+                            distance = marker.start() - mention_end
+                        else:
+                            distance = 0
+                        candidates.append((distance, label))
+    if not candidates:
+        return "Unclassified", 1
+    distance, label = min(candidates, key=lambda item: (item[0], 0 if item[1].startswith("Required") else 1))
+    return (label, 2) if label.startswith("Required") else (label, 1)
 
 
 def analyze(resume: str, job_description: str) -> MatchReport:
@@ -181,7 +222,7 @@ def analyze(resume: str, job_description: str) -> MatchReport:
     required_matched = 0
     for skill in sorted(job_skills):
         job_context = _contexts_for_skill(job_description, skill)
-        priority, weight = _job_priority(job_context)
+        priority, weight = _job_priority(job_context, skill)
         present = skill in resume_skills
         resume_evidence = _contexts_for_skill(resume, skill) if present else []
         skill_rows.append(SkillEvidence(skill, _skill_group(skill), priority, resume_evidence, job_context, present, weight))
