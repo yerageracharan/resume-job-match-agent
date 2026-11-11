@@ -12,9 +12,9 @@
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![MCP](https://img.shields.io/badge/Integration-MCP-6B5B95)](https://modelcontextprotocol.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-10%20unit%20tests-success)](tests/)
+[![Tests](https://github.com/yerageracharan/resume-job-match-agent/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/yerageracharan/resume-job-match-agent/actions/workflows/tests.yml)
 
-[🚀 Start the tutorial](docs/01-getting-started.md) · [🤖 Connect Claude](docs/02-claude-integration.md) · [🧠 Understand the score](docs/03-analysis-playbook.md) · [🛠 Developer guide](docs/04-architecture-and-contributing.md) · [🧯 Troubleshooting](docs/05-troubleshooting.md)
+[🚀 Start the tutorial](docs/01-getting-started.md) · [🤖 Connect Claude](docs/02-claude-integration.md) · [🧠 Understand the score](docs/03-analysis-playbook.md) · [🛠 Developer guide](docs/04-architecture-and-contributing.md) · [🧯 Troubleshooting](docs/05-troubleshooting.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
 
 </div>
 
