@@ -67,6 +67,11 @@ On Windows, double-click `setup_claude_windows.bat`, then fully quit and restart
 
 ## Architecture
 
+![Resume to job match workflow](docs/visuals/01-resume-match-map.svg)
+
+*The score is only one part of the report: inspect the resume evidence, job context, and inferred gaps.*
+
+
 ```mermaid
 flowchart LR
   A[Resume PDF / DOCX / TXT] --> B[documents.py]
@@ -81,6 +86,11 @@ flowchart LR
 The matching engine is shared by the browser UI and MCP server. The local matching process does not call an LLM or require an API key. When you ask Claude to inspect resume content, that content is processed by Claude under your account settings; this is not an offline Claude workflow.
 
 ## What the report means
+
+![Truthful resume improvement loop](docs/visuals/02-truthful-rewrite-loop.svg)
+
+*Use evidence to improve clarity; ask the user before adding facts that the source does not contain.*
+
 
 - A skill is detected when one of the engine's configured phrases/aliases appears in the input.
 - Required/preferred labels are **inferred** from nearby wording and can be wrong.
