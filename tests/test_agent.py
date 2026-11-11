@@ -45,7 +45,7 @@ class AgentTests(unittest.TestCase):
 
     def test_wrapped_multiword_skill_keeps_resume_evidence(self):
         report = analyze(
-            "Built dashboards using natural language\\nprocessing for support tickets.",
+            "Built dashboards using natural language\nprocessing for support tickets.",
             "Preferred: natural language processing.",
         )
         row = next(item for item in report.skills if item.skill == "natural language processing")

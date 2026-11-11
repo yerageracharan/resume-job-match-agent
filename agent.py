@@ -181,7 +181,7 @@ def _job_priority(contexts: list[str], skill: str) -> tuple[str, int]:
         for alias in aliases:
             pattern = re.compile(r"(?<![a-z0-9])" + re.escape(alias) + r"(?![a-z0-9])", re.I)
             for mention in pattern.finditer(normalized):
-                separators = [m.start() for m in re.finditer(r"[;\\n•]", normalized)]
+                separators = [m.start() for m in re.finditer(r"[;•]", normalized)]
                 left = max((position + 1 for position in separators if position < mention.start()), default=0)
                 right = min((position for position in separators if position >= mention.end()), default=len(normalized))
                 clause = normalized[left:right]
