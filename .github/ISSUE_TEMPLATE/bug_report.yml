@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible resume parsing, matching, or reporting defect.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic resumes/job descriptions only. Never attach real personal data, resumes, contact details, or API keys."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Minimal synthetic resume and job description
+      description: Include only the terms needed to reproduce the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected match, evidence, or score behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result and redacted logs
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - PDF/DOCX/TXT extraction
+        - Skill detection / aliases
+        - Evidence mapping
+        - Requirement priority / scoring
+        - Streamlit UI
+        - Claude / MCP integration
+        - Other
+    validations:
+      required: true

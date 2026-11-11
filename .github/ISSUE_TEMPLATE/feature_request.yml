@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a job-application workflow improvement.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Applicant problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and truthfulness design
+      description: Explain how the feature avoids inventing qualifications and keeps claims source-backed.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy and data-flow impact
+      description: Explain whether resume/job content remains local or is sent to an external provider.
+    validations:
+      required: true
