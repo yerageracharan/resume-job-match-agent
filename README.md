@@ -2,7 +2,7 @@
 
 # Resume Job Match Agent
 
-### Evidence-first job application intelligence · Agent #8 of 200
+### Evidence-first job application intelligence · Agent #10 of 200
 
 ![Original developer squad mascots](docs/assets/dev-squad.webp)
 

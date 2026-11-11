@@ -1,4 +1,4 @@
-# Benchmark notes — Agent #8
+# Benchmark notes — Agent #10
 
 **Research snapshot:** 11 November 2026. Repository activity, stars, and feature sets change; re-check upstream repositories before making comparative claims in public content.
 
