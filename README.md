@@ -1,91 +1,111 @@
+<div align="center">
+
 # Resume Job Match Agent
 
-**Agent #8 — 200 AI Agents in 200 Days**
+### Evidence-first job application intelligence · Agent #8 of 200
 
-An evidence-first resume analysis tool with a local Streamlit interface and a Model Context Protocol (MCP) server for Claude Desktop, Claude Code, and other compatible AI clients.
+![Original developer squad mascots](docs/assets/dev-squad.webp)
 
-The product goal is simple: help a job seeker understand how their real experience maps to a specific job, see the evidence behind every detected match, and decide what to improve next. It must never invent experience, skills, employers, qualifications, or performance metrics.
+**Understand the fit. Inspect the evidence. Improve the application truthfully.**
 
-## Features
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![MCP](https://img.shields.io/badge/Integration-MCP-6B5B95)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-10%20unit%20tests-success)](tests/)
 
-- Resume upload: selectable-text PDF, DOCX, and TXT.
-- Evidence-first analysis: resume sentences and job-description context for each detected skill.
-- Transparent scoring: weighted coverage of skills recognised by the built-in vocabulary. This is not an ATS score or hiring probability.
-- Requirement prioritisation: heuristically labels job skills as required, preferred, or unclassified. Labels are inferred and should be checked.
-- Actionable gaps: separates inferred required gaps from preferred gaps; never encourages applicants to claim skills they do not have.
-- Export: Markdown and JSON reports.
-- Claude integration through MCP: Claude can call the same local engine, analyse a user-selected local resume file, and retrieve resume evidence.
-- Local-first matching: no model API key or cloud service is needed for the scoring engine.
+[🚀 Start the tutorial](docs/01-getting-started.md) · [🤖 Connect Claude](docs/02-claude-integration.md) · [🧠 Understand the score](docs/03-analysis-playbook.md) · [🛠 Developer guide](docs/04-architecture-and-contributing.md) · [🧯 Troubleshooting](docs/05-troubleshooting.md)
 
-## Quick start — Windows
+</div>
+
+---
+
+## What it does
+
+Upload a resume (PDF, DOCX, or TXT), paste a job description, and get a transparent report showing recognised skill matches, source sentences, inferred requirement priority, gaps, and next actions. The same analysis engine is available through a local MCP server, so Claude Desktop and Claude Code can call it as a tool.
+
+**It is not an ATS simulator, a hiring prediction model, or a guarantee of interviews.** Its percentage is weighted coverage of skills detected by a curated vocabulary. Read the evidence and limitations before acting on a finding.
+
+## Pick your path
+
+| I want to… | Start here |
+|---|---|
+| Use the browser app | [Getting Started](docs/01-getting-started.md) |
+| Use it inside Claude Desktop | [Claude Integration](docs/02-claude-integration.md) |
+| Use it with Claude Code | [Claude Integration](docs/02-claude-integration.md#6-claude-code-route) |
+| Understand the weighted score | [Analysis Playbook](docs/03-analysis-playbook.md) |
+| Extend the code | [Developer Guide](docs/04-architecture-and-contributing.md) |
+| Fix an error | [Troubleshooting](docs/05-troubleshooting.md) |
+
+## Quick start — Windows PowerShell
 
 Requirements: Python 3.11 or newer.
 
-```bat
+```powershell
+git clone https://github.com/yerageracharan/resume-job-match-agent.git
+cd resume-job-match-agent
 py -3.11 -m venv .venv
-.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
-streamlit run app.py
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
 ```
 
-Upload a PDF, DOCX, or TXT resume, review the extracted text, paste a job description, and select **Analyse this application**.
+Open the local URL printed by Streamlit (normally `http://localhost:8501`). Upload your resume, inspect the extracted text, paste the complete job description, and run the analysis. The detailed illustrated setup is in [Chapter 01](docs/01-getting-started.md).
 
-## Connect Claude Desktop on Windows
+## Claude integration
 
-1. Install and open Claude Desktop once.
-2. Double-click `setup_claude_windows.bat` from the extracted project folder.
-3. The script creates `.venv`, installs the MCP/document-extraction dependencies, and adds the MCP server to Claude Desktop's configuration while preserving other configured servers.
-4. Fully quit Claude Desktop and reopen it.
-5. Check **Settings → Developer** for `resume-job-match`.
+The repository includes a local MCP server with three tools:
 
-The script configures a local stdio server. Claude launches `mcp_server.py` as a child process.
-
-### Claude Code
-
-After installing dependencies in `.venv`, run this from the project folder:
-
-```bat
-claude mcp add resume-job-match -- ".venv\Scripts\python.exe" "%CD%\mcp_server.py"
-```
-
-Run `/mcp` inside Claude Code to verify the tools are available.
-
-### MCP tools
-
-| Tool | Purpose |
+| MCP tool | Purpose |
 |---|---|
-| `analyze_resume_match` | Analyse resume text against a job description and return structured findings plus a Markdown report |
-| `analyze_resume_file` | Extract a local PDF/DOCX/TXT path supplied by the user, then analyse it |
-| `get_resume_evidence` | Retrieve source sentences mentioning a skill to ground suggested edits |
+| `analyze_resume_match` | Analyse resume text against job-description text |
+| `analyze_resume_file` | Read a user-selected local PDF/DOCX/TXT file and analyse it |
+| `get_resume_evidence` | Retrieve sentences that support a skill mention |
 
-Example Claude prompt:
+On Windows, double-click `setup_claude_windows.bat`, then fully quit and restart Claude Desktop. See the [complete Claude integration chapter](docs/02-claude-integration.md) for verification, Claude Code setup, example prompts, and privacy boundaries.
 
-> Use the Resume Job Match Agent MCP tools to analyse `C:\Users\Me\Documents\resume.pdf` against this job description. Explain the biggest gaps, cite the resume sentences that support the matches, and propose truthful edits. Do not add any skill, employer, qualification, project, result, or metric not supported by the resume. Ask me when evidence is missing.
+## Architecture
 
-## Scoring methodology
+```mermaid
+flowchart LR
+  A[Resume PDF / DOCX / TXT] --> B[documents.py]
+  B --> C[agent.py · deterministic matcher]
+  D[Job description] --> C
+  C --> E[Evidence-backed report]
+  E --> F[app.py · Streamlit]
+  E --> G[mcp_server.py · MCP]
+  G <-->|stdio| H[Claude Desktop / Claude Code]
+```
 
-The score is **weighted coverage of skills recognised by the current vocabulary**:
+The matching engine is shared by the browser UI and MCP server. The local matching process does not call an LLM or require an API key. When you ask Claude to inspect resume content, that content is processed by Claude under your account settings; this is not an offline Claude workflow.
 
-- Detected skills in the job description receive weight 2 when nearby language suggests a requirement (for example, “required” or “must have”).
-- Skills labelled preferred or not clearly classified receive weight 1.
-- A detected skill present in the resume earns its weight; missing skills earn zero.
-- Score = earned weight / total detected-job-skill weight.
+## What the report means
 
-Priority classification is heuristic and may be wrong. The app shows the job-description context so users can verify it. A term match does not prove proficiency.
+- A skill is detected when one of the engine's configured phrases/aliases appears in the input.
+- Required/preferred labels are **inferred** from nearby wording and can be wrong.
+- Required-inferred skills receive weight 2; preferred/unclassified skills receive weight 1.
+- The score is matched weight divided by total detected job-skill weight.
+- A matched term is not proof of proficiency.
+- The vocabulary is curated, not exhaustive; semantic similarity is not implemented in this version.
 
-## Privacy and safety
+The [Analysis Playbook](docs/03-analysis-playbook.md) explains the formula, evidence rows, gap triage, and safe resume rewriting.
 
-- Streamlit matching runs locally; it does not send resumes to a third-party API.
-- The MCP server reads only a local file path explicitly supplied to its tool.
-- When Claude is asked to analyse resume content, that information is sent to Claude under the user's Claude plan and privacy settings. This is not an offline Claude workflow.
-- Review extracted text before relying on the report, especially for tables, columns, symbols, or scanned PDFs.
-- Do not use a score as an automated hiring decision.
-- Never add claims to a resume unless the user confirms they are true.
+## Documentation with 50 visuals
+
+The field manual contains 50 numbered Mermaid diagrams and an original Japanese-inspired developer mascot squad. GitHub renders the diagrams directly in Markdown.
+
+- [01 · Getting Started — visuals 01–12](docs/01-getting-started.md)
+- [02 · Claude Integration — visuals 13–24](docs/02-claude-integration.md)
+- [03 · Analysis Playbook — visuals 25–38](docs/03-analysis-playbook.md)
+- [04 · Developer Guide — visuals 39–40](docs/04-architecture-and-contributing.md)
+- [05 · Troubleshooting — visuals 41–50](docs/05-troubleshooting.md)
+
+[Open the documentation map](docs/README.md)
 
 ## Tests
 
-```bat
+```powershell
 python -m unittest discover -s tests -v
 ```
 
@@ -104,19 +124,32 @@ resume-job-match-agent/
 ├── tests/
 │   ├── test_agent.py
 │   └── test_documents.py
+├── docs/
+│   ├── README.md
+│   ├── 01-getting-started.md
+│   ├── 02-claude-integration.md
+│   ├── 03-analysis-playbook.md
+│   ├── 04-architecture-and-contributing.md
+│   ├── 05-troubleshooting.md
+│   └── assets/dev-squad.webp
 ├── BENCHMARK.md
 ├── CLAUDE.md
 └── LICENSE
 ```
 
-## Roadmap
+## Privacy and responsible use
 
-- Semantic similarity for synonym/transferable-skill detection, with model and confidence clearly disclosed.
-- Better resume section parsing and ATS text-layout diagnostics.
-- User-confirmed master-resume facts and tailored bullet drafts with source traceability.
-- Additional languages and role-specific skill vocabularies.
-- Regression datasets built from consented, anonymised examples.
+- Keep real resumes and private application data out of Git commits and public issues.
+- The Streamlit matcher runs locally.
+- The MCP server reads a local path only when the tool is given that path.
+- Claude may process content supplied to it through an MCP tool call; understand your Claude account's data controls.
+- Do not use this project to make automated hiring decisions.
+- Never add a skill, employer, qualification, responsibility, result, or metric unless it is true and the user can support it.
+
+## Contributing
+
+See the [Developer Guide](docs/04-architecture-and-contributing.md) for code ownership, adding skills, safely changing scoring, test commands, and pull-request expectations. Please include regression tests and synthetic examples only.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT. See [LICENSE](LICENSE).
